@@ -42,7 +42,7 @@ function findFilePath(filename: string): string | null {
 
 async function bootstrap() {
   console.log('\n======================================');
-  console.log('        99AI 服务启动中...            ');
+  console.log('        AiWeb 服务启动中...            ');
   console.log('======================================\n');
 
   const redis = new Redis({
@@ -122,8 +122,8 @@ async function bootstrap() {
   // 只在测试环境下启用Swagger
   if (process.env.ISDEV === 'true') {
     const config = new DocumentBuilder()
-      .setTitle('99AI API')
-      .setDescription('99AI服务API文档')
+      .setTitle('AiWeb API')
+      .setDescription('AiWeb服务API文档')
       .setVersion('1.0')
       .addBearerAuth()
       .build();

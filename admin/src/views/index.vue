@@ -24,7 +24,7 @@ meta:
     return settingsStore.settings.app.colorScheme;
   });
 
-  const feedbackUrl = 'https://github.com/vastxie/99AI';
+  const feedbackUrl = 'https://github.com/your-username/AiWeb';
 
   // 在新窗口打开问题反馈链接
   const openFeedbackInNewWindow = () => {
@@ -360,7 +360,7 @@ meta:
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-xs text-gray-600 dark:text-gray-400"
-                  >https://github.com/vastxie/99AI</span
+                  >https://github.com/your-username/AiWeb</span
                 >
                 <span class="text-xs text-blue-500 font-medium">点击</span>
               </div>

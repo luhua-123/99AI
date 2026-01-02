@@ -249,12 +249,12 @@ defineExpose({
 
     <!-- 菜单内容 -->
     <transition
-      enter-active-class="transition ease-out duration-100"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
+      enter-active-class="transition ease-out duration-150"
+      enter-from-class="transform opacity-0 scale-[0.97] translate-y-[-4px]"
+      enter-to-class="transform opacity-100 scale-100 translate-y-0"
+      leave-active-class="transition ease-in duration-100"
       leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
+      leave-to-class="transform opacity-0 scale-[0.97]"
     >
       <div
         v-show="isOpen"
@@ -268,6 +268,7 @@ defineExpose({
         }"
         role="menu"
         :aria-hidden="!isOpen"
+        class="dropdown-menu-panel"
       >
         <slot name="menu" :close="close" :isOpen="isOpen">
           <div>
@@ -278,3 +279,22 @@ defineExpose({
     </transition>
   </div>
 </template>
+<style>
+/* 增强的下拉面板样式 */
+.dropdown-menu-panel {
+  border-radius: 16px !important;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 8px 10px -2px rgba(0, 0, 0, 0.1),
+    0 16px 24px -4px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.dark .dropdown-menu-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(43, 43, 43, 0.95) !important;
+}
+</style>

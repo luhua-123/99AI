@@ -25,19 +25,17 @@ const CONSOLE_STYLES: ConsoleStyles = {
 }
 
 /**
- * 打印99AI相关的控制台信息
+ * 打印AiWeb相关的控制台信息
  */
-export function print99aiInfo(): void {
+export function printAiWebInfo(): void {
   if (process.env.NODE_ENV === 'production') return
 
-  console.log('%c99AI', CONSOLE_STYLES.title)
+  console.log('%cAiWeb', CONSOLE_STYLES.title)
   console.log(`林深时见鹿, 海深时见鲸, 情深时见你🌹
 
 千里万里路, 不如自己部署😊
 
-欢迎访问我们的开源项目👇
-
-https://github.com/vastxie/99AI`)
+AiWeb - 您的智能AI助手`)
 }
 
 /**
@@ -72,7 +70,7 @@ export function printAppInfo(appName: string, version: string): void {
 }
 
 export default {
-  print99aiInfo,
+  printAiWebInfo,
   printCustomInfo,
   printAppInfo,
 }

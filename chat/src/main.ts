@@ -4,7 +4,7 @@ import '@/styles/github-markdown.less'
 import '@/styles/global.less'
 // import '@/styles/highlight.less' // 移除旧的highlight样式
 import '@/styles/index.css'
-import { print99aiInfo, printAppInfo } from '@/utils/logger'
+import { printAiWebInfo, printAppInfo } from '@/utils/logger'
 import { message } from '@/utils/message'
 import router from '@/utils/router'
 import 'katex/dist/katex.min.css'
@@ -57,8 +57,8 @@ async function bootstrap() {
   const msgInstance = message()
 
   // 在开发环境下打印控制台信息
-  print99aiInfo()
-  printAppInfo('99AI', '5.0.1')
+  // printAiWebInfo()
+  printAppInfo('AiWeb', '5.0.1')
 
   const domain = `${window.location.protocol}//${window.location.hostname}${
     window.location.port ? `:${window.location.port}` : ''

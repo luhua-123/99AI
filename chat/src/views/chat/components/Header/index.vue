@@ -10,9 +10,9 @@ import {
   CheckOne,
   Close,
   DarkMode,
+  Down,
   EditTwo,
   ExpandLeft,
-  Right,
 } from '@icon-park/vue-next'
 import { computed, inject, onMounted, ref, Ref, watch } from 'vue'
 
@@ -290,38 +290,39 @@ function openSettings(tab?: number) {
             </div>
           </div>
 
-          <!-- 使用通用下拉菜单组件 -->
+          <!-- 使用通用下拉菜单组件 - ChatGPT风格 -->
           <div v-else class="flex-1 flex items-center">
-            <DropdownMenu v-model="isMenuOpen" position="bottom-left" max-height="40vh">
+            <DropdownMenu
+              v-model="isMenuOpen"
+              position="bottom-left"
+              max-height="60vh"
+              min-width="280px"
+            >
               <template #trigger>
                 <button
-                  class="menu-trigger"
+                  class="model-selector-trigger"
                   @mouseover="isHovering = true"
                   @mouseleave="isHovering = false"
                   aria-label="选择模型"
                 >
-                  <span class="truncate whitespace-nowrap overflow-hidden max-w-[50vw]">
+                  <span class="model-selector-text">
                     {{ configObj?.modelInfo?.modelName || '新对话' }}
                   </span>
-                  <Right
-                    v-if="isHovering || isMobile || isMenuOpen"
-                    size="20"
-                    class="ml-2 justify-center items-center flex-shrink-0"
-                    :class="{
-                      'text-base font-bold': isMobile,
-                      'text-sm': !isMobile,
-                    }"
+                  <Down
+                    size="16"
+                    class="model-selector-chevron"
+                    :class="{ 'rotate-180': isMenuOpen }"
                     aria-hidden="true"
                   />
                 </button>
               </template>
               <template #menu="{ close }">
-                <div>
+                <div class="model-selector-menu">
                   <div
                     v-for="(option, index) in modelOptions"
                     :key="index"
-                    class="menu-item menu-item-md"
-                    :class="{ 'menu-item-active': activeModel === option.value }"
+                    class="model-selector-option"
+                    :class="{ 'model-selector-option-active': activeModel === option.value }"
                     @click="
                       () => {
                         handleModelSelect(option)
@@ -332,30 +333,27 @@ function openSettings(tab?: number) {
                     tabindex="0"
                     :aria-label="`选择${option.label}模型`"
                   >
-                    <div class="avatar avatar-md">
+                    <div class="model-selector-option-avatar">
                       <img
                         v-if="option.modelAvatar"
                         :src="option.modelAvatar"
                         :alt="`${option.label}模型图标`"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-cover rounded-full"
                       />
-                      <span v-else>
+                      <span v-else class="model-selector-option-avatar-text">
                         {{ option.label.charAt(0) }}
                       </span>
                     </div>
-                    <div class="menu-item-content">
-                      <div class="menu-item-title">
+                    <div class="model-selector-option-content">
+                      <div class="model-selector-option-name">
                         {{ option.label }}
                       </div>
-                      <div v-if="option.modelDescription" class="menu-item-description">
-                        {{ option.modelDescription }}
-                      </div>
                     </div>
-                    <div class="flex-shrink-0" v-if="activeModel === option.value">
+                    <div class="model-selector-option-check" v-if="activeModel === option.value">
                       <CheckOne
                         theme="filled"
-                        size="16"
-                        class="text-gray-500 dark:text-gray-400"
+                        size="18"
+                        class="text-primary-500"
                         aria-hidden="true"
                       />
                     </div>
@@ -478,3 +476,177 @@ function openSettings(tab?: number) {
     </div>
   </header>
 </template>
+
+<style>
+/* ChatGPT风格模型选择器样式 */
+.model-selector-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #171717;
+  background-color: #f7f7f8;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.model-selector-trigger:hover {
+  background-color: #ececf1;
+  border-color: rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.model-selector-trigger:active {
+  transform: translateY(0);
+}
+
+.dark .model-selector-trigger {
+  color: #ececec;
+  background-color: #2d2d2d;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .model-selector-trigger:hover {
+  background-color: #3b3b3b;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.model-selector-text {
+  max-width: 50vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-selector-chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .model-selector-chevron {
+  color: #9ca3af;
+}
+
+.model-selector-chevron.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* 下拉菜单内容区域 */
+.model-selector-menu {
+  padding: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .model-selector-menu {
+  background-color: rgba(43, 43, 43, 0.95);
+}
+
+/* 模型选项 */
+.model-selector-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  min-height: 2.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.model-selector-option:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(1.01);
+}
+
+.dark .model-selector-option:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.model-selector-option-active {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.dark .model-selector-option-active {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* 模型头像 */
+.model-selector-option-avatar {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.dark .model-selector-option-avatar {
+  background-color: #4b5563;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.model-selector-option-avatar-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.dark .model-selector-option-avatar-text {
+  color: #9ca3af;
+}
+
+/* 模型信息 */
+.model-selector-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.model-selector-option-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #171717;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .model-selector-option-name {
+  color: #f3f4f6;
+}
+
+.model-selector-option-desc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-top: 0.125rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .model-selector-option-desc {
+  color: #9ca3af;
+}
+
+/* 选中标记 */
+.model-selector-option-check {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

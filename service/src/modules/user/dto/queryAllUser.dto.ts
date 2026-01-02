@@ -10,7 +10,7 @@ export class QueryAllUserDto {
   @IsOptional()
   size: number;
 
-  @ApiProperty({ example: '99AI', description: '用户姓名', required: false })
+  @ApiProperty({ example: 'AiWeb', description: '用户姓名', required: false })
   @IsOptional()
   username: string;
 
