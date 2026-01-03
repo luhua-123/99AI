@@ -24,6 +24,15 @@ const routes: RouteRecordRaw = {
       },
     },
     {
+      path: 'customer-service',
+      name: 'customerServiceConfig',
+      component: () => import('@/views/system/customerService.vue'),
+      meta: {
+        title: '客服配置',
+        icon: 'mdi:headset',
+      },
+    },
+    {
       path: 'points',
       name: 'PointsDisplay',
       component: () => import('@/views/package/points.vue'),

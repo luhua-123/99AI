@@ -70,6 +70,7 @@ export const useGlobalStore = defineStore('global-store', {
     workflowContent: [],
     markdownContent: '',
     isMarkdownPreviewerVisible: false,
+    customerServiceDialog: false,
   }),
 
   actions: {
@@ -282,6 +283,10 @@ export const useGlobalStore = defineStore('global-store', {
       if (!visible) {
         this.markdownContent = ''
       }
+    },
+
+    updateCustomerServiceDialog(customerServiceDialog: boolean) {
+      this.customerServiceDialog = customerServiceDialog
     },
   },
 })

@@ -1,11 +1,12 @@
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ChatGroupService } from './chatGroup.service';
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { CreateGroupDto } from './dto/createGroup.dto';
 import { Request } from 'express';
 import { JwtAuthGuard } from '@/common/auth/jwtAuth.guard';
 import { DelGroupDto } from './dto/delGroup.dto';
 import { UpdateGroupDto } from './dto/updateGroup.dto';
+import { AdminAuthGuard } from '@/common/auth/adminAuth.guard';
 
 @ApiTags('group')
 @Controller('group')
@@ -50,5 +51,31 @@ export class ChatGroupController {
   @ApiBearerAuth()
   delAll(@Req() req: Request) {
     return this.chatGroupService.delAll(req);
+  }
+
+  @Post('createSupportGroup')
+  @ApiOperation({ summary: '创建客服对话组' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async createSupportGroup(@Req() req: Request) {
+    const { id } = req.user;
+    return this.chatGroupService.createSupportGroup(id);
+  }
+
+  @Post('support/status')
+  @ApiOperation({ summary: '更新客服对话状态' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  updateSupportStatus(@Req() req: Request, @Body() body: { status: string; groupId?: number }) {
+    const { id } = req.user;
+    return this.chatGroupService.updateSupportStatusForUser(id, body?.status, body?.groupId);
+  }
+
+  @Get('support/list')
+  @ApiOperation({ summary: '查询客服对话组' })
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  querySupportGroups(@Query() query: any) {
+    return this.chatGroupService.querySupportGroups(query);
   }
 }

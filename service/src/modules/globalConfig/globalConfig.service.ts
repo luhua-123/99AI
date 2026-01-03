@@ -282,6 +282,7 @@ export class GlobalConfigService implements OnModuleInit {
       'isModelInherited',
       'noVerifyRegister',
       'noticeInfo',
+      'customerServiceContactMarkdown',
       'homeHtml',
       'isAutoOpenAgreement',
       'agreementInfo',

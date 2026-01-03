@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BadWordsDialog from '@/components/Dialogs/BadWordsDialog.vue'
+import CustomerServiceDialog from '@/components/CustomerServiceDialog.vue'
 import Login from '@/components/Login/Login.vue'
 import MobileSettingsDialog from '@/components/MobileSettingsDialog.vue'
 import SettingsDialog from '@/components/SettingsDialog.vue'
@@ -112,6 +113,10 @@ provide('createNewChatGroup', createNewChatGroup)
       <BadWordsDialog :visible="badWordsDialog" />
       <SettingsDialog v-if="!isMobile" :visible="settingsDialog" />
       <MobileSettingsDialog v-else :visible="mobileSettingsDialog" />
+      <CustomerServiceDialog
+        :visible="useGlobalStore.customerServiceDialog"
+        @close="() => { useGlobalStore.updateCustomerServiceDialog(false) }"
+      />
     </div>
   </div>
 </template>

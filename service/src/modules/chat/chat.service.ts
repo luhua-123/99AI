@@ -1036,4 +1036,53 @@ export class ChatService {
       res.status(500).send({ error: '语音合成请求处理失败' });
     }
   }
+
+  /* 发送客服消息（混合模式） */
+  async sendSupportMessage(body: { content: string }, req: Request) {
+    const userId = req.user.id;
+    const supportGroup = await this.chatGroupService.createSupportGroup(userId);
+    const groupId = supportGroup.id;
+
+    // 保存用户消息
+    await this.chatLogService.saveChatLog({
+      userId,
+      groupId, // 客服组ID
+      role: 'user',
+      content: body.content,
+      type: 1,
+      modelName: '官方客服',
+      modelAvatar: '',
+    });
+
+    // 调用autoReply检查自动回复（混合模式）
+    const autoReplyResult = await this.autoReplyService.checkAutoReply(body.content);
+
+    if (autoReplyResult.answer) {
+      // 有自动回复
+      await this.chatLogService.saveChatLog({
+        userId,
+        groupId,
+        role: 'assistant',
+        content: autoReplyResult.answer,
+        type: 1,
+        modelName: '自动回复',
+        modelAvatar: '',
+      });
+
+      return {
+        autoReply: true,
+        answer: autoReplyResult.answer,
+        isAIReplyEnabled: autoReplyResult.isAIReplyEnabled,
+      };
+    }
+
+    // 无自动回复，标记为待人工回复
+    // 更新客服对话组状态为"待处理"
+    await this.chatGroupService.updateSupportStatusByGroup(groupId, 'open');
+
+    return {
+      autoReply: false,
+      message: '消息已发送，客服将尽快回复',
+    };
+  }
 }

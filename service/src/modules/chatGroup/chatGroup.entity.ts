@@ -47,4 +47,10 @@ export class ChatGroupEntity extends BaseEntity {
 
   @Column({ comment: 'PDF中的文字内容', nullable: true, type: 'mediumtext' })
   pdfTextContent: string;
+
+  @Column({ comment: '客服状态: open-待处理, processing-处理中, closed-已关闭', nullable: true, default: 'open' })
+  supportStatus: string;
+
+  @Column({ comment: '分配的客服管理员ID', nullable: true })
+  supportAdminId: number;
 }

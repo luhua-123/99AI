@@ -41,6 +41,7 @@ export interface GlobalConfig {
   baiduCode: string
   buyCramiAddress: string
   noticeInfo: string
+  customerServiceContactMarkdown: string
   registerSendStatus: string
   registerSendModel3Count: string
   registerSendModel4Count: string

@@ -5,7 +5,9 @@ import { Request } from 'express';
 import * as pdf from 'pdf-parse';
 import { In, Repository } from 'typeorm';
 import { AppEntity } from '../app/app.entity';
+import { ChatLogEntity } from '../chatLog/chatLog.entity';
 import { ModelsService } from '../models/models.service';
+import { UserEntity } from '../user/user.entity';
 import { ChatGroupEntity } from './chatGroup.entity';
 import { CreateGroupDto } from './dto/createGroup.dto';
 import { DelGroupDto } from './dto/delGroup.dto';
@@ -17,6 +19,10 @@ export class ChatGroupService {
     private readonly chatGroupEntity: Repository<ChatGroupEntity>,
     @InjectRepository(AppEntity)
     private readonly appEntity: Repository<AppEntity>,
+    @InjectRepository(ChatLogEntity)
+    private readonly chatLogEntity: Repository<ChatLogEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userEntity: Repository<UserEntity>,
     private readonly modelsService: ModelsService,
   ) {}
 
@@ -248,5 +254,121 @@ export class ChatGroupService {
     if (groupInfo) {
       return groupInfo.pdfTextContent;
     }
+  }
+
+  /* 查找用户的客服对话组 */
+  async findSupportGroup(userId: number) {
+    return this.chatGroupEntity.findOne({
+      where: {
+        userId,
+        appId: -1, // 使用-1标识为客服对话组
+        isDelete: false,
+      },
+    });
+  }
+
+  /* 更新客服对话组的状态 */
+  async updateSupportStatus(userId: number, status: string) {
+    return this.chatGroupEntity.update(
+      { userId, appId: -1 },
+      { supportStatus: status },
+    );
+  }
+
+  /* 创建或返回客服对话组 */
+  async createSupportGroup(userId: number) {
+    const existingGroup = await this.findSupportGroup(userId);
+    if (existingGroup) return existingGroup;
+
+    return this.chatGroupEntity.save({
+      userId,
+      title: '官方客服',
+      isSticky: true,
+      appId: -1,
+      supportStatus: 'open',
+      config: JSON.stringify({ type: 'support', status: 'open' }),
+    });
+  }
+
+  /* 按groupId更新客服对话组状态 */
+  async updateSupportStatusByGroup(groupId: number, status: string) {
+    return this.chatGroupEntity.update({ id: groupId }, { supportStatus: status });
+  }
+
+  /* 用户端更新客服对话组状态 */
+  async updateSupportStatusForUser(userId: number, status: string, groupId?: number) {
+    const nextStatus = (status || '').trim();
+    const allowedStatuses = ['open', 'closed'];
+    if (!allowedStatuses.includes(nextStatus)) {
+      throw new HttpException('非法的客服对话状态', HttpStatus.BAD_REQUEST);
+    }
+
+    let group = null;
+    if (groupId) {
+      group = await this.chatGroupEntity.findOne({
+        where: { id: groupId, userId, appId: -1, isDelete: false },
+      });
+    } else {
+      group = await this.findSupportGroup(userId);
+    }
+
+    if (!group) {
+      throw new HttpException('客服对话组不存在', HttpStatus.BAD_REQUEST);
+    }
+
+    await this.chatGroupEntity.update({ id: group.id }, { supportStatus: nextStatus });
+    return { success: true };
+  }
+
+  /* 分配客服管理员 */
+  async assignSupportAdmin(groupId: number, adminId: number, status?: string) {
+    const update: any = { supportAdminId: adminId };
+    if (status) update.supportStatus = status;
+    return this.chatGroupEntity.update({ id: groupId }, update);
+  }
+
+  /* 查询客服对话组列表 */
+  async querySupportGroups(query: { page?: number; size?: number; status?: string }) {
+    const { page = 1, size = 20, status } = query;
+    const where: any = { appId: -1, isDelete: false };
+    if (status) where.supportStatus = status;
+
+    const [rows, count] = await this.chatGroupEntity.findAndCount({
+      where,
+      order: { updatedAt: 'DESC' },
+      skip: (page - 1) * size,
+      take: size,
+    });
+
+    if (!rows.length) return { rows: [], count };
+
+    const userIds = rows.map(item => item.userId);
+    const users = await this.userEntity.find({
+      where: { id: In(userIds) },
+      select: ['id', 'username', 'email', 'nickname', 'avatar'],
+    });
+
+    const groupIds = rows.map(item => item.id);
+    const lastLogs = await this.chatLogEntity.find({
+      where: { groupId: In(groupIds), isDelete: false },
+      order: { createdAt: 'DESC' },
+    });
+    const lastLogMap = {};
+    lastLogs.forEach(log => {
+      if (!lastLogMap[log.groupId]) lastLogMap[log.groupId] = log;
+    });
+
+    const data = rows.map(item => {
+      const user = users.find(u => u.id === item.userId) || {};
+      const lastLog = lastLogMap[item.id];
+      return {
+        ...item,
+        user,
+        lastMessage: lastLog?.content || lastLog?.answer || lastLog?.prompt || '',
+        lastMessageAt: lastLog?.createdAt || null,
+      };
+    });
+
+    return { rows: data, count };
   }
 }

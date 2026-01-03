@@ -39,6 +39,71 @@ export class ChatLogService {
     return savedLog; // 这里返回保存后的实体，包括其 ID
   }
 
+  private mapChatLogs(list: ChatLogEntity[]) {
+    return list.map(item => {
+      const {
+        prompt,
+        role,
+        answer,
+        createdAt,
+        model,
+        modelName,
+        type,
+        status,
+        action,
+        drawId,
+        id,
+        imageUrl,
+        fileInfo,
+        fileUrl,
+        ttsUrl,
+        videoUrl,
+        audioUrl,
+        customId,
+        pluginParam,
+        progress,
+        modelAvatar,
+        taskData,
+        promptReference,
+        networkSearchResult,
+        fileVectorResult,
+        taskId,
+        reasoning_content,
+        tool_calls,
+        content,
+      } = item;
+      return {
+        chatId: id,
+        dateTime: formatDate(createdAt),
+        content: content || (role === 'assistant' ? answer : prompt),
+        reasoningText: reasoning_content,
+        tool_calls: tool_calls,
+        modelType: type,
+        status: status,
+        action: action,
+        drawId: drawId,
+        customId: customId,
+        role: role,
+        error: false,
+        imageUrl: imageUrl || fileInfo || '',
+        fileUrl: fileUrl,
+        ttsUrl: ttsUrl,
+        videoUrl: videoUrl,
+        audioUrl: audioUrl,
+        progress,
+        model: model,
+        modelName: modelName,
+        pluginParam: pluginParam,
+        modelAvatar: modelAvatar,
+        taskData: taskData,
+        promptReference: promptReference,
+        networkSearchResult: networkSearchResult,
+        fileVectorResult: fileVectorResult,
+        taskId: taskId,
+      };
+    });
+  }
+
   /* 更新问答日志 */
   async updateChatLog(id, logInfo) {
     return await this.chatLogEntity.update({ id }, logInfo);
@@ -201,68 +266,79 @@ export class ChatLogService {
       if (count === 0) return [];
     }
     const list = await this.chatLogEntity.find({ where });
-    return list.map(item => {
-      const {
-        prompt,
-        role,
-        answer,
-        createdAt,
-        model,
-        modelName,
-        type,
-        status,
-        action,
-        drawId,
-        id,
-        imageUrl,
-        fileInfo,
-        fileUrl,
-        ttsUrl,
-        videoUrl,
-        audioUrl,
-        customId,
-        pluginParam,
-        progress,
-        modelAvatar,
-        taskData,
-        promptReference,
-        networkSearchResult,
-        fileVectorResult,
-        taskId,
-        reasoning_content,
-        tool_calls,
-        content,
-      } = item;
-      return {
-        chatId: id,
-        dateTime: formatDate(createdAt),
-        content: content || (role === 'assistant' ? answer : prompt),
-        reasoningText: reasoning_content,
-        tool_calls: tool_calls,
-        modelType: type,
-        status: status,
-        action: action,
-        drawId: drawId,
-        customId: customId,
-        role: role,
-        error: false,
-        imageUrl: imageUrl || fileInfo || '',
-        fileUrl: fileUrl,
-        ttsUrl: ttsUrl,
-        videoUrl: videoUrl,
-        audioUrl: audioUrl,
-        progress,
-        model: model,
-        modelName: modelName,
-        pluginParam: pluginParam,
-        modelAvatar: modelAvatar,
-        taskData: taskData,
-        promptReference: promptReference,
-        networkSearchResult: networkSearchResult,
-        fileVectorResult: fileVectorResult,
-        taskId: taskId,
-      };
+    return this.mapChatLogs(list);
+  }
+
+  /* 查询用户客服消息 */
+  async querySupportMessages(req: Request, params: { groupId?: number }) {
+    const { id: userId } = req.user;
+    let groupId = params?.groupId;
+
+    if (groupId) {
+      const group = await this.chatGroupEntity.findOne({
+        where: { id: groupId, userId, isDelete: false },
+      });
+      if (!group) {
+        throw new HttpException('客服对话组不存在！', HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      const supportGroup = await this.chatGroupEntity.findOne({
+        where: { userId, appId: -1, isDelete: false },
+      });
+      if (!supportGroup) return [];
+      groupId = supportGroup.id;
+    }
+
+    const list = await this.chatLogEntity.find({
+      where: { userId, groupId, isDelete: false },
+      order: { createdAt: 'ASC' },
     });
+    return this.mapChatLogs(list);
+  }
+
+  /* 管理端查询客服消息 */
+  async querySupportMessagesByGroup(groupId: number) {
+    if (!groupId) return [];
+    const list = await this.chatLogEntity.find({
+      where: { groupId, isDelete: false },
+      order: { createdAt: 'ASC' },
+    });
+    return this.mapChatLogs(list);
+  }
+
+  /* 管理端回复客服消息 */
+  async createSupportReply(
+    req: Request,
+    body: { groupId: number; content: string; status?: string },
+  ) {
+    const { groupId, content, status } = body;
+    if (!groupId || !content) {
+      throw new HttpException('缺失必要参数！', HttpStatus.BAD_REQUEST);
+    }
+
+    const group = await this.chatGroupEntity.findOne({ where: { id: groupId } });
+    if (!group) {
+      throw new HttpException('客服对话组不存在！', HttpStatus.BAD_REQUEST);
+    }
+
+    const userId = group.userId;
+    await this.chatLogEntity.save({
+      userId,
+      groupId,
+      role: 'assistant',
+      content,
+      type: 1,
+      modelName: '官方客服',
+      modelAvatar: '',
+    });
+
+    const nextStatus = status || 'processing';
+    await this.chatGroupEntity.update(
+      { id: groupId },
+      { supportStatus: nextStatus, supportAdminId: req.user.id },
+    );
+
+    return { success: true };
   }
 
   /* 查询历史对话的列表 */

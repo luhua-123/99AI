@@ -26,4 +26,12 @@ export class ChatController {
   ttsProcess(@Body() body: any, @Req() req: Request, @Res() res: Response) {
     return this.chatService.ttsProcess(body, req, res);
   }
+
+  @Post('sendSupportMessage')
+  @ApiOperation({ summary: '发送客服消息' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async sendSupportMessage(@Body() body: { content: string }, @Req() req: Request) {
+    return this.chatService.sendSupportMessage(body, req);
+  }
 }

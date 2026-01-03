@@ -59,6 +59,30 @@ export class ChatLogController {
     return this.chatLogService.chatList(req, params);
   }
 
+  @Get('querySupportMessages')
+  @ApiOperation({ summary: '查询客服消息记录' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  querySupportMessages(@Req() req: Request, @Query() params: { groupId?: number }) {
+    return this.chatLogService.querySupportMessages(req, params);
+  }
+
+  @Get('support/messages')
+  @ApiOperation({ summary: '管理端查询客服消息' })
+  @ApiBearerAuth()
+  @UseGuards(AdminAuthGuard)
+  querySupportMessagesForAdmin(@Query() params: { groupId: number }) {
+    return this.chatLogService.querySupportMessagesByGroup(Number(params.groupId));
+  }
+
+  @Post('support/reply')
+  @ApiOperation({ summary: '管理端回复客服消息' })
+  @ApiBearerAuth()
+  @UseGuards(AdminAuthGuard)
+  replySupport(@Req() req: Request, @Body() body: { groupId: number; content: string; status?: string }) {
+    return this.chatLogService.createSupportReply(req, body);
+  }
+
   @Post('del')
   @ApiOperation({ summary: '删除我的问答记录' })
   @ApiBearerAuth()

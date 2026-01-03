@@ -41,6 +41,15 @@ const routes: RouteRecordRaw = {
         icon: 'ic:outline-question-answer',
       },
     },
+    {
+      path: 'support',
+      name: 'supportWorkbench',
+      component: () => import('@/views/chat/support.vue'),
+      meta: {
+        title: '客服工作台',
+        icon: 'mdi:headset',
+      },
+    },
   ],
 };
 

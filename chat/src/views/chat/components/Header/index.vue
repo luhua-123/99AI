@@ -9,6 +9,7 @@ import {
   Brightness,
   CheckOne,
   Close,
+  Customer,
   DarkMode,
   Down,
   EditTwo,
@@ -377,6 +378,20 @@ function openSettings(tab?: number) {
               </button>
               <!-- 悬停提示 - 切换主题 -->
               <div v-if="!isMobile" class="tooltip tooltip-bottom">切换主题</div>
+            </div>
+
+            <!-- 客服按钮，仅在非外部链接和非预览器状态下显示 -->
+            <div v-if="!externalLinkActive && !isPreviewerVisible" class="relative group mx-1">
+              <button
+                type="button"
+                class="btn-icon btn-md"
+                @click="() => { useGlobalStore.updateCustomerServiceDialog(true) }"
+                aria-label="联系客服"
+              >
+                <Customer size="20" aria-hidden="true" />
+              </button>
+              <!-- 悬停提示 - 联系客服 -->
+              <div v-if="!isMobile" class="tooltip tooltip-bottom">联系客服</div>
             </div>
 
             <!-- 工具链接组件，在非预览器状态、非外部链接状态、非应用广场状态下显示 -->
