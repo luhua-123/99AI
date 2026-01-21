@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Request } from 'express';
 import * as pdf from 'pdf-parse';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { AppEntity } from '../app/app.entity';
 import { ChatLogEntity } from '../chatLog/chatLog.entity';
 import { ModelsService } from '../models/models.service';
@@ -129,7 +129,7 @@ export class ChatGroupService {
   async query(req: Request) {
     try {
       const { id } = req.user;
-      const params = { userId: id, isDelete: false };
+      const params = { userId: id, isDelete: false, appId: Not(-1) };
       const res = await this.chatGroupEntity.find({
         where: params,
         order: { isSticky: 'DESC', updatedAt: 'DESC' },

@@ -51,6 +51,15 @@ const routes: RouteRecordRaw = {
       },
     },
     {
+      path: 'message',
+      name: 'systemMenuMessage',
+      component: () => import('@/views/system/message.vue'),
+      meta: {
+        title: '站内信推送',
+        icon: 'mdi:message-text-outline',
+      },
+    },
+    {
       path: 'user-agreement',
       name: 'userAgreement',
       component: () => import('@/views/users/userAgreement.vue'),

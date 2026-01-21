@@ -34,6 +34,7 @@ interface Props {
   closeOnEscape?: boolean
   // z-index值
   zIndex?: number
+  matchTriggerWidth?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -47,6 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
   closeOnClickOutside: true,
   closeOnEscape: true,
   zIndex: 50,
+  matchTriggerWidth: false,
 })
 
 const emit = defineEmits<{
@@ -62,6 +64,7 @@ const isOpen = computed({
 
 const menuRef = ref<HTMLElement>()
 const triggerRef = ref<HTMLElement>()
+const triggerWidth = ref<number | null>(null)
 
 // 自动检测位置的响应式变量
 const autoPosition = ref<Exclude<Position, 'auto'>>('bottom-left')
@@ -129,15 +132,44 @@ const menuClasses = computed(() => {
   return baseClasses.filter(Boolean).join(' ')
 })
 
+const menuStyle = computed(() => {
+  const style: Record<string, string | number> = {
+    maxHeight: props.maxHeight,
+    zIndex: props.zIndex,
+    overflowY: 'auto',
+  }
+
+  if (props.matchTriggerWidth && triggerWidth.value) {
+    const width = `${triggerWidth.value}px`
+    style.width = width
+    style.minWidth = width
+  } else {
+    style.minWidth = props.minWidth
+  }
+
+  return style
+})
+
+const updateTriggerWidth = () => {
+  if (!triggerRef.value) return
+  triggerWidth.value = triggerRef.value.getBoundingClientRect().width
+}
+
 // 切换菜单状态
 const toggleMenu = () => {
   if (props.disabled) return
+  if (!isOpen.value && props.matchTriggerWidth) {
+    updateTriggerWidth()
+  }
   isOpen.value = !isOpen.value
 }
 
 // 打开菜单
 function open() {
   if (props.disabled) return
+  if (!isOpen.value && props.matchTriggerWidth) {
+    updateTriggerWidth()
+  }
   isOpen.value = true
 }
 
@@ -178,14 +210,20 @@ watch(isOpen, (newValue, oldValue) => {
     if (props.position === 'auto') {
       // 使用nextTick确保DOM更新完成
       nextTick(() => {
-        detectPosition()
+        if (props.matchTriggerWidth) updateTriggerWidth()
+        if (props.position === 'auto') detectPosition()
+      })
+    }
+    if (props.matchTriggerWidth && props.position !== 'auto') {
+      nextTick(() => {
+        updateTriggerWidth()
       })
     }
     emit('open')
   } else if (!newValue && oldValue) {
     emit('close')
   }
-})
+}, { immediate: true })
 
 // 生命周期钩子
 onMounted(() => {
@@ -194,6 +232,9 @@ onMounted(() => {
   }
   if (props.closeOnEscape) {
     window.addEventListener('keydown', handleKeyDown)
+  }
+  if (props.matchTriggerWidth) {
+    updateTriggerWidth()
   }
 })
 
@@ -260,12 +301,7 @@ defineExpose({
         v-show="isOpen"
         ref="menuRef"
         :class="menuClasses"
-        :style="{
-          maxHeight: maxHeight,
-          minWidth: minWidth,
-          zIndex: zIndex,
-          overflowY: 'auto',
-        }"
+        :style="menuStyle"
         role="menu"
         :aria-hidden="!isOpen"
         class="dropdown-menu-panel"

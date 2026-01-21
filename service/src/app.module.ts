@@ -17,6 +17,7 @@ import { ChatLogModule } from './modules/chatLog/chatLog.module';
 import { CramiModule } from './modules/crami/crami.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { GlobalConfigModule } from './modules/globalConfig/globalConfig.module';
+import { MessageModule } from './modules/message/message.module';
 import { ModelsModule } from './modules/models/models.module';
 import { OfficialModule } from './modules/official/official.module';
 import { OrderModule } from './modules/order/order.module';
@@ -83,6 +84,7 @@ import { VerificationModule } from './modules/verification/verification.module';
     UploadModule,
     RedisCacheModule,
     GlobalConfigModule,
+    MessageModule,
     StatisticModule,
     BadWordsModule,
     AutoReplyModule,

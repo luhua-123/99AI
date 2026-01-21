@@ -16,6 +16,8 @@ import { CramiEntity } from '../crami/crami.entity';
 import { CramiPackageEntity } from '../crami/cramiPackage.entity';
 import { ConfigEntity } from '../globalConfig/config.entity';
 import { ModelsEntity } from '../models/models.entity';
+import { MessageEntity } from '../message/message.entity';
+import { MessageRecipientEntity } from '../message/messageRecipient.entity';
 import { OrderEntity } from '../order/order.entity';
 import { PluginEntity } from '../plugin/plugin.entity';
 import { Share } from '../share/share.entity';
@@ -59,6 +61,8 @@ import { VerificationEntity } from '../verification/verification.entity';
             PluginEntity,
             ConfigEntity,
             ChatLogEntity,
+            MessageEntity,
+            MessageRecipientEntity,
             UserAppsEntity,
             AppCatsEntity,
             AppEntity,
